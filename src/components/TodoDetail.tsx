@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Dialog } from '@headlessui/react';
 import { PencilIcon, TrashIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import FieldEditor from '@/components/FieldEditor';
@@ -54,6 +54,71 @@ function toInputValue(value: string, field: ProjectField): string {
 
 function isImageUrl(url: string) {
   return /\.(png|jpe?g|gif|webp|svg)(\?|$)/i.test(url);
+}
+
+function toExternalHref(raw: string) {
+  const value = raw.trim();
+  if (/^(javascript|data):/i.test(value)) return '#';
+  if (/^(https?:\/\/|mailto:|tel:)/i.test(value)) return value;
+  return `https://${value.replace(/^\/\//, '')}`;
+}
+
+function Expandable({ children }: { children: React.ReactNode }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [expanded, setExpanded] = useState(false);
+  const [overflows, setOverflows] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || expanded) return;
+    const measure = () => {
+      setOverflows(el.scrollHeight > el.clientHeight + 1);
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [expanded, children]);
+
+  return (
+    <div>
+      <div ref={ref} className={expanded ? 'clamp-open' : 'clamp-5'}>
+        {children}
+      </div>
+      {(overflows || expanded) && (
+        <button type="button" className="read-more" onClick={() => setExpanded((open) => !open)}>
+          {expanded ? 'Show less' : 'Read more'}
+        </button>
+      )}
+    </div>
+  );
+}
+
+function LinkifiedText({ text }: { text: string }) {
+  const pattern = /(https?:\/\/[^\s]+|www\.[^\s]+)/gi;
+  const nodes: React.ReactNode[] = [];
+  let last = 0;
+  for (const match of text.matchAll(pattern)) {
+    const index = match.index ?? 0;
+    const found = match[0];
+    const trimmed = found.replace(/[),.;]+$/, '');
+    if (index > last) nodes.push(text.slice(last, index));
+    nodes.push(
+      <a
+        key={`${index}-${trimmed}`}
+        href={toExternalHref(trimmed)}
+        className="link"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        {trimmed}
+      </a>
+    );
+    if (trimmed.length < found.length) nodes.push(found.slice(trimmed.length));
+    last = index + found.length;
+  }
+  if (last < text.length) nodes.push(text.slice(last));
+  return <>{nodes}</>;
 }
 
 function statusTone(value: string, options: string[]) {
@@ -408,20 +473,34 @@ function FieldValue({ field, value }: { field: ProjectField; value: string }) {
   if (field.type === 'link') {
     const links = value.split('\n').map((link) => link.trim()).filter(Boolean);
     return (
-      <div className="space-y-1">
-        {links.map((link) =>
-          isImageUrl(link) ? (
-            <img key={link} src={link} alt="" className="mr-2 inline-block h-10 w-10 rounded-md object-cover" />
-          ) : (
-            <a key={link} href={link} className="link block break-all" target="_blank" rel="noopener noreferrer">
-              {link}
+      <Expandable>
+        <div className="space-y-1">
+          {links.map((link) => (
+            <a
+              key={link}
+              href={toExternalHref(link)}
+              className="link block break-all"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {isImageUrl(link) ? (
+                <img src={link} alt="" className="mr-2 inline-block h-10 w-10 rounded-md object-cover" />
+              ) : (
+                link
+              )}
             </a>
-          )
-        )}
-      </div>
+          ))}
+        </div>
+      </Expandable>
     );
   }
-  return <span className="whitespace-pre-wrap">{value}</span>;
+  return (
+    <Expandable>
+      <span className="whitespace-pre-wrap">
+        <LinkifiedText text={value} />
+      </span>
+    </Expandable>
+  );
 }
 
 function FieldInput({

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { IBM_Plex_Mono, Inter } from "next/font/google";
-import "./globals.css";
 import "aos/dist/aos.css"; // AOS styles
+import "./globals.css";
 import AOSInitializer from "@/components/AOSInitializer";
 import AuthProvider from "@/components/AuthProvider";
 import Header from "@/components/Header";

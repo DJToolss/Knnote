@@ -146,13 +146,51 @@ h3,
     font-variant-numeric: tabular-nums;
   }
 
-  .link {
+  a.link {
     color: var(--accent);
     font-weight: 600;
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    position: relative;
+    z-index: 1;
   }
 
-  .link:hover {
+  a.link:hover {
     color: var(--accent-hover);
+  }
+
+  .clamp-5 {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 5;
+    overflow: hidden;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+
+  .clamp-open {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+
+  .read-more {
+    margin-top: 4px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--accent);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .read-more:hover {
+    color: var(--accent-hover);
+  }
+
+  [data-aos] {
+    pointer-events: auto;
   }
 
   .auth-shell {
