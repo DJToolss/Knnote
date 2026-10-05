@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Dialog } from '@headlessui/react';
-import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { PencilIcon, TrashIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import FieldEditor from '@/components/FieldEditor';
 import { ProjectField, resolveFields, resolveStatusOptions } from '@/lib/fields';
 
