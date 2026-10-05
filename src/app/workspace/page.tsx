@@ -8,6 +8,7 @@ import { Toaster, toast } from 'react-hot-toast';
 
 import SidePanel from '@/components/SidePanel';
 import TodoDetail from '@/components/TodoDetail';
+import { ProjectField } from '@/lib/fields';
 
 
 interface Item {
@@ -19,7 +20,8 @@ interface Item {
   images?: string[];
   createdAt: string;
   targetDate?: string;
-  status?: 'ETS' | 'IN_PROGRESS' | 'COMPLETED';
+  status?: string;
+  values?: Record<string, string>;
 }
 
 interface Todo {
@@ -29,6 +31,8 @@ interface Todo {
   user: string;
   createdAt: string;
   targetDate?: string;
+  fields?: ProjectField[];
+  statusOptions?: string[];
 }
 
 export default function Home() {
@@ -93,12 +97,13 @@ export default function Home() {
     }
   };
 
-  const handleCreateTodo = async (title: string, targetDate?: string) => {
+  const handleCreateTodo = async (title: string, fields: ProjectField[], statusOptions: string[]) => {
     try {
       const response = await axios.post('/api/todos', { 
         title, 
         items: [],
-        targetDate: targetDate ? new Date(targetDate).toISOString() : undefined
+        fields,
+        statusOptions,
       });
       setTodos([response.data, ...todos]);
       setSelectedTodo(response.data);

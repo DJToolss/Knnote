@@ -70,9 +70,10 @@ export async function PUT(
           if (itemWithoutId.targetDate) {
             itemWithoutId.targetDate = new Date(itemWithoutId.targetDate);
           }
-          // Ensure status is properly set for new items
           if (!itemWithoutId.status) {
-            itemWithoutId.status = 'ETS';
+            itemWithoutId.status = Array.isArray(data.statusOptions) && data.statusOptions[0]
+              ? data.statusOptions[0]
+              : 'ETS';
           }
           console.log('Processed new item:', JSON.stringify(itemWithoutId, null, 2));
           return itemWithoutId;
@@ -81,9 +82,10 @@ export async function PUT(
           if (item.targetDate) {
             item.targetDate = new Date(item.targetDate);
           }
-          // Ensure status is properly set for existing items
           if (!item.status) {
-            item.status = 'ETS';
+            item.status = Array.isArray(data.statusOptions) && data.statusOptions[0]
+              ? data.statusOptions[0]
+              : 'ETS';
           }
           console.log('Processed existing item:', JSON.stringify(item, null, 2));
           return item;

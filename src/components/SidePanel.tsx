@@ -1,7 +1,9 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import { XMarkIcon, ExclamationTriangleIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { Fragment } from 'react';
+import FieldEditor from '@/components/FieldEditor';
+import { DEFAULT_STATUS_OPTIONS, ProjectField, blankField } from '@/lib/fields';
 
 interface Item {
   _id: string;
@@ -12,7 +14,8 @@ interface Item {
   images?: string[];
   createdAt: string;
   targetDate?: string;
-  status?: 'ETS' | 'IN_PROGRESS' | 'COMPLETED';
+  status?: string;
+  values?: Record<string, string>;
 }
 
 interface Todo {
@@ -22,12 +25,14 @@ interface Todo {
   user: string;
   createdAt: string;
   targetDate?: string;
+  fields?: ProjectField[];
+  statusOptions?: string[];
 }
 
 interface SidePanelProps {
   todos: Todo[];
   onTodoClick: (todo: Todo) => void;
-  onCreateTodo: (title: string, targetDate?: string) => void;
+  onCreateTodo: (title: string, fields: ProjectField[], statusOptions: string[]) => void;
   onDeleteTodo: (id: string) => void;
   onUpdateTodo: (todo: Todo) => void;
   isMobile: boolean;
@@ -50,8 +55,6 @@ export default function SidePanel({
   activeTodoId,
 }: SidePanelProps) {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [newTodoTitle, setNewTodoTitle] = useState('');
-  const [newTodoTargetDate, setNewTodoTargetDate] = useState('');
   const [todoToDelete, setTodoToDelete] = useState<string | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -59,16 +62,6 @@ export default function SidePanel({
   const [editTitle, setEditTitle] = useState('');
   const [editTargetDate, setEditTargetDate] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
-
-  const handleCreateSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (newTodoTitle.trim()) {
-      onCreateTodo(newTodoTitle, newTodoTargetDate);
-      setNewTodoTitle('');
-      setNewTodoTargetDate('');
-      setIsCreateModalOpen(false);
-    }
-  };
 
   const handleDeleteClick = (id: string) => {
     setTodoToDelete(id);
@@ -253,14 +246,13 @@ export default function SidePanel({
         </Transition.Root>
 
         {/* Create Todo Modal */}
-        <CreateTodoModal 
+        <CreateTodoModal
           isOpen={isCreateModalOpen}
           setIsOpen={setIsCreateModalOpen}
-          title={newTodoTitle}
-          setTitle={setNewTodoTitle}
-          targetDate={newTodoTargetDate}
-          setTargetDate={setNewTodoTargetDate}
-          onSubmit={handleCreateSubmit}
+          onCreate={(title, fields, statusOptions) => {
+            onCreateTodo(title, fields, statusOptions);
+            setIsCreateModalOpen(false);
+          }}
         />
 
         {/* Edit Todo Modal */}
@@ -289,14 +281,13 @@ export default function SidePanel({
       <div className="sidebar-frame">{panel}</div>
       
       {/* Create Todo Modal */}
-      <CreateTodoModal 
+      <CreateTodoModal
         isOpen={isCreateModalOpen}
         setIsOpen={setIsCreateModalOpen}
-        title={newTodoTitle}
-        setTitle={setNewTodoTitle}
-        targetDate={newTodoTargetDate}
-        setTargetDate={setNewTodoTargetDate}
-        onSubmit={handleCreateSubmit}
+        onCreate={(title, fields, statusOptions) => {
+          onCreateTodo(title, fields, statusOptions);
+          setIsCreateModalOpen(false);
+        }}
       />
 
       {/* Edit Todo Modal */}
@@ -324,20 +315,44 @@ export default function SidePanel({
 function CreateTodoModal({
   isOpen,
   setIsOpen,
-  title,
-  setTitle,
-  targetDate,
-  setTargetDate,
-  onSubmit
+  onCreate,
 }: {
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
-  title: string;
-  setTitle: (title: string) => void;
-  targetDate: string;
-  setTargetDate: (date: string) => void;
-  onSubmit: (e: React.FormEvent) => void;
+  onCreate: (title: string, fields: ProjectField[], statusOptions: string[]) => void;
 }) {
+  const [title, setTitle] = useState('');
+  const [fields, setFields] = useState<ProjectField[]>([blankField()]);
+  const [statusOptions, setStatusOptions] = useState<string[]>([...DEFAULT_STATUS_OPTIONS]);
+  const [error, setError] = useState('');
+
+  const resetForm = () => {
+    setTitle('');
+    setFields([blankField()]);
+    setStatusOptions([...DEFAULT_STATUS_OPTIONS]);
+    setError('');
+  };
+
+  useEffect(() => {
+    if (isOpen) resetForm();
+  }, [isOpen]);
+
+  const handleSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
+    const cleanedStatuses = statusOptions.map((option) => option.trim()).filter(Boolean);
+    if (!title.trim()) {
+      setError('Enter a project title');
+      return;
+    }
+    if (cleanedStatuses.length === 0) {
+      setError('Add at least one status value');
+      return;
+    }
+    const cleanedFields = fields.filter((field) => field.label.trim());
+    onCreate(title.trim(), cleanedFields, cleanedStatuses);
+    resetForm();
+  };
+
   return (
     <Transition appear show={isOpen} as={Fragment}>
       <Dialog as="div" className="relative z-20" onClose={() => setIsOpen(false)}>
@@ -364,14 +379,14 @@ function CreateTodoModal({
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <Dialog.Panel className="modal-panel w-full max-w-md transform overflow-hidden p-6 text-left align-middle transition-all">
+              <Dialog.Panel className="modal-panel w-full max-w-2xl transform overflow-hidden p-6 text-left align-middle transition-all">
                 <Dialog.Title
                   as="h3"
                   className="panel-title"
                 >
                   Create New Todo
                 </Dialog.Title>
-                <form onSubmit={onSubmit}>
+                <form onSubmit={handleSubmit}>
                   <div className="mt-4">
                     <label htmlFor="todoTitle" className="field-label">
                       Todo Title
@@ -386,18 +401,15 @@ function CreateTodoModal({
                       autoFocus
                     />
                   </div>
-                  {/* <div className="mt-4">
-                    <label htmlFor="todoTargetDate" className="field-label">
-                      Target Date (Optional)
-                    </label>
-                    <input
-                      type="date"
-                      id="todoTargetDate"
-                      className="field mt-1"
-                      value={targetDate}
-                      onChange={(e) => setTargetDate(e.target.value)}
+                  <div className="mt-5">
+                    <FieldEditor
+                      fields={fields}
+                      statusOptions={statusOptions}
+                      onChangeFields={setFields}
+                      onChangeStatusOptions={setStatusOptions}
                     />
-                  </div> */}
+                  </div>
+                  {error && <p className="alert-error mt-4">{error}</p>}
 
                   <div className="mt-6 flex justify-end space-x-3">
                     <button
