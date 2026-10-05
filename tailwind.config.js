@@ -8,9 +8,12 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['var(--font-geist-sans)'],
+        sans: ['var(--font-inter)', 'Inter', 'sans-serif'],
+        mono: ['var(--font-plex-mono)', 'IBM Plex Mono', 'monospace'],
+      },
+      boxShadow: {
+        card: 'var(--shadow-card)',
       },
     },
   },
-
 }

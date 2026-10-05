@@ -1,12 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/db';
 import { User } from '@/lib/models';
+import { TURNSTILE_ENABLED } from '@/lib/turnstile-config';
+import { clientIpFromHeaders, verifyTurnstileToken } from '@/lib/turnstile';
 
 export async function POST(request: NextRequest) {
   try {
+    const { name, email, password, turnstileToken } = await request.json();
+
+    if (TURNSTILE_ENABLED) {
+      const turnstileOk = await verifyTurnstileToken(
+        turnstileToken,
+        clientIpFromHeaders(request.headers)
+      );
+      if (!turnstileOk) {
+        return NextResponse.json(
+          { error: 'Bot check failed. Please try again.' },
+          { status: 400 }
+        );
+      }
+    }
+
     await connectDB();
-    
-    const { name, email, password } = await request.json();
     
     // Check if user already exists
     const userExists = await User.findOne({ email });

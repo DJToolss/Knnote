@@ -3,12 +3,27 @@ import crypto from 'crypto';
 import connectDB from '@/lib/db';
 import { User } from '@/lib/models';
 import { sendPasswordResetEmail } from '@/lib/email';
+import { TURNSTILE_ENABLED } from '@/lib/turnstile-config';
+import { clientIpFromHeaders, verifyTurnstileToken } from '@/lib/turnstile';
 
 export async function POST(request: NextRequest) {
   try {
+    const { email, turnstileToken } = await request.json();
+
+    if (TURNSTILE_ENABLED) {
+      const turnstileOk = await verifyTurnstileToken(
+        turnstileToken,
+        clientIpFromHeaders(request.headers)
+      );
+      if (!turnstileOk) {
+        return NextResponse.json(
+          { error: 'Bot check failed. Please try again.' },
+          { status: 400 }
+        );
+      }
+    }
+
     await connectDB();
-    
-    const { email } = await request.json();
     
     if (!email) {
       return NextResponse.json(

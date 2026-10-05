@@ -2,6 +2,8 @@ import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import connectDB from "./db";
 import { User } from "./models";
+import { TURNSTILE_ENABLED } from "./turnstile-config";
+import { verifyTurnstileToken } from "./turnstile";
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -9,11 +11,27 @@ export const authOptions: NextAuthOptions = {
       name: "Credentials",
       credentials: {
         email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" }
+        password: { label: "Password", type: "password" },
+        turnstileToken: { label: "Turnstile", type: "text" },
       },
-      async authorize(credentials) {
+      async authorize(credentials, req) {
         if (!credentials?.email || !credentials?.password) {
           return null;
+        }
+
+        if (TURNSTILE_ENABLED) {
+          const headerIp = (name: string) => {
+            const value = req?.headers?.[name];
+            const raw = Array.isArray(value) ? value[0] : value;
+            return raw?.split(",")[0]?.trim() || null;
+          };
+          const turnstileOk = await verifyTurnstileToken(
+            credentials.turnstileToken,
+            headerIp("cf-connecting-ip") || headerIp("x-forwarded-for")
+          );
+          if (!turnstileOk) {
+            throw new Error("Bot check failed. Please try again.");
+          }
         }
 
         try {

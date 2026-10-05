@@ -3,9 +3,13 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import axios from 'axios';
+import TurnstileWidget from '@/components/TurnstileWidget';
+import { TURNSTILE_ENABLED } from '@/lib/turnstile-config';
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState('');
+  const [turnstileToken, setTurnstileToken] = useState('');
+  const [resetSignal, setResetSignal] = useState(0);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -17,41 +21,51 @@ export default function ForgotPassword() {
       setError('Please enter your email address');
       return;
     }
+
+    if (TURNSTILE_ENABLED && !turnstileToken) {
+      setError('Please complete the bot check');
+      return;
+    }
     
     try {
       setLoading(true);
       setError('');
       setMessage('');
       
-      const response = await axios.post('/api/auth/forgot-password', { email });
+      const response = await axios.post('/api/auth/forgot-password', {
+        email,
+        turnstileToken,
+      });
       setMessage(response.data.message);
     } catch (error: any) {
       setError(error.response?.data?.error || 'An error occurred. Please try again.');
     } finally {
       setLoading(false);
+      setTurnstileToken('');
+      setResetSignal((value) => value + 1);
     }
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-black to-slate-900 p-4">
-      <div className="w-full max-w-md rounded-2xl bg-slate-800 p-8 shadow-xl border border-slate-700">
-        <h1 className="mb-6 text-center text-2xl font-bold text-yellow-400">Forgot Password</h1>
+    <div className="auth-shell">
+      <div className="auth-card">
+        <h1 className="page-title mb-6 text-center">Forgot Password</h1>
         
         {message && (
-          <div className="mb-4 rounded-md bg-green-900/30 p-3 text-green-300">
+          <div className="alert-success mb-4">
             {message}
           </div>
         )}
         
         {error && (
-          <div className="mb-4 rounded-md bg-red-900/30 p-3 text-red-300">
+          <div className="alert-error mb-4">
             {error}
           </div>
         )}
         
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-yellow-300">
+            <label htmlFor="email" className="field-label">
               Email Address
             </label>
             <input
@@ -60,25 +74,29 @@ export default function ForgotPassword() {
               placeholder="Enter your registered email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 p-2 block w-full rounded-md border-slate-600 bg-slate-700 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-slate-200"
+              className="field mt-1"
               required
             />
           </div>
+
+          {TURNSTILE_ENABLED && (
+            <TurnstileWidget onVerify={setTurnstileToken} resetSignal={resetSignal} />
+          )}
           
           <div>
             <button
               type="submit"
-              disabled={loading}
-              className="w-full rounded-md bg-blue-700 py-2 px-4 text-white shadow-sm hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-800 disabled:opacity-70"
+              disabled={loading || (TURNSTILE_ENABLED && !turnstileToken)}
+              className="btn-primary w-full disabled:opacity-70"
             >
               {loading ? 'Sending...' : 'Send Reset Link'}
             </button>
           </div>
         </form>
         
-        <div className="mt-6 text-center text-sm text-slate-400">
+        <div className="mt-6 text-center help">
           Remember your password?{' '}
-          <Link href="/auth/signin" className="text-blue-400 hover:text-blue-300">
+          <Link href="/auth/signin" className="link">
             Sign In
           </Link>
         </div>

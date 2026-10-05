@@ -114,17 +114,17 @@ export default function TodoDetail({ todo, onUpdateTodo }: TodoDetailProps) {
   );
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
+    <div className="content-pad max-w-7xl mx-auto">
       <div
-        className="flex justify-between items-center mb-6 bg-slate-900 rounded-lg shadow-md p-4 border border-gray-300"
+        className="panel mb-4 flex items-center justify-between gap-4 p-4"
         data-aos="fade-down"
       >
-        <div className="flex-1">
-          <h1 className="text-2xl font-bold bg-gradient-to-r from-yellow-400 to-yellow-300 bg-clip-text text-transparent mb-2">{todo.title}</h1>
-          <div className="flex items-center space-x-4 text-sm text-slate-400">
-            <span>Created: {new Date(todo.createdAt).toLocaleDateString()}</span>
+        <div className="flex-1 min-w-0">
+          <h1 className="page-title mb-2">{todo.title}</h1>
+          <div className="help flex flex-wrap items-center gap-3">
+            <span className="mono">Created: {new Date(todo.createdAt).toLocaleDateString()}</span>
             {todo.targetDate && (
-              <span className={`${new Date(todo.targetDate) < new Date() ? 'text-red-400' : 'text-green-400'}`}>
+              <span className={`status-pill ${new Date(todo.targetDate) < new Date() ? 'status-negative' : 'status-positive'}`}>
                 Target: {new Date(todo.targetDate).toLocaleDateString()}
               </span>
             )}
@@ -132,7 +132,7 @@ export default function TodoDetail({ todo, onUpdateTodo }: TodoDetailProps) {
         </div>
         <button
           onClick={handleAddItem}
-          className="px-4 py-2 bg-gradient-to-r from-blue-700 to-indigo-800 text-white font-bold text-xl rounded-md hover:from-blue-800 hover:to-indigo-900 transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+          className="btn-primary shrink-0"
           data-aos="zoom-in"
           data-aos-delay="200"
         >
@@ -141,101 +141,85 @@ export default function TodoDetail({ todo, onUpdateTodo }: TodoDetailProps) {
       </div>
 
       {/* Search Input */}
-      <div className="mb-4 p-4 bg-slate-900 rounded-lg border border-gray-300">
+      <div className="panel mb-4 p-4">
         <div className="relative">
           <input
             type="text"
             placeholder="Search items by name or notes..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full px-4 py-2 bg-black border border-gray-300 rounded-md text-slate-200 placeholder-slate-400 focus:border-yellow-400 focus:ring-yellow-400 transition-all duration-300"
+            className="field pr-8"
           />
           {searchQuery && (
             <button
               onClick={() => setSearchQuery('')}
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-200 transition-colors duration-300"
+              className="field-clear"
+              aria-label="Clear search"
             >
-              <XMarkIcon className="h-4 w-4" />
+              <XMarkIcon className="h-[17px] w-[17px]" />
             </button>
           )}
         </div>
       </div>
 
       <div
-        className="overflow-x-auto rounded-xl shadow-lg border border-gray-300 bg-slate-900"
+        className="panel overflow-x-auto"
         data-aos="fade-up"
         data-aos-delay="300"
       >
-        <table className="min-w-full divide-y divide-slate-700">
-          <thead className="bg-gradient-to-r from-slate-900 to-slate-800">
+        <table className="data-table min-w-full">
+          <thead>
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-bold  text-yellow-300 uppercase tracking-wider">
-                Name
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-bold  text-yellow-300 uppercase tracking-wider">
-                Notes
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-bold  text-yellow-300 uppercase tracking-wider">
-                Points
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-bold  text-yellow-300 uppercase tracking-wider">
-                Created
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-bold  text-yellow-300 uppercase tracking-wider">
-                Target Date
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-bold  text-yellow-300 uppercase tracking-wider">
-                Status
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-bold  text-yellow-300 uppercase tracking-wider">
-                Links
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-bold  text-yellow-300 uppercase tracking-wider">
-                Images
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-bold  text-yellow-300 uppercase tracking-wider">
-                Actions
-              </th>
+              <th>Name</th>
+              <th>Notes</th>
+              <th>Points</th>
+              <th>Created</th>
+              <th>Target Date</th>
+              <th>Status</th>
+              <th>Links</th>
+              <th>Images</th>
+              <th>Actions</th>
             </tr>
           </thead>
-          <tbody className="bg-black divide-y divide-slate-700">
+          <tbody>
             {filteredItems.map((item, index) => {
               console.log('Rendering item:', item._id, 'with status:', item.status);
               return (
-                <tr
-                  key={item._id}
-                  className="hover:bg-slate-900 transition-all duration-300"
-            
-                >
-                <td className="px-6 py-4 whitespace-nowrap font-medium text-slate-300">{item.name || '-'}</td>
-                <td className="px-6 py-4 text-slate-300">{item.notes || '-'}</td>
-                <td className="px-6 py-4 whitespace-nowrap">
+                <tr key={item._id}>
+                <td className="whitespace-nowrap font-medium">{item.name || '-'}</td>
+                <td>{item.notes || '-'}</td>
+                <td className="whitespace-nowrap">
                   {item.points ?
-                    <span className="px-2 py-1 bg-blue-900/50 text-yellow-400 rounded-full text-xs font-medium">
+                    <span className="chip mono">
                       {item.points}
                     </span> : '-'}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-300">
+                <td className="mono whitespace-nowrap">
                   {new Date(item.createdAt).toLocaleDateString()}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="whitespace-nowrap">
                   {(() => {
                     console.log('Rendering target date for item:', item.name, 'targetDate:', item.targetDate);
                     return item.targetDate ? (
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${new Date(item.targetDate) < new Date()
-                          ? 'bg-red-900/50 text-red-400'
-                          : 'bg-green-900/50 text-green-400'
+                      <span className={`status-pill mono ${new Date(item.targetDate) < new Date()
+                          ? 'status-negative'
+                          : 'status-positive'
                         }`}>
                         {new Date(item.targetDate).toLocaleDateString()}
                       </span>
                     ) : (
-                      <span className="text-slate-400 text-xs">-</span>
+                      <span className="help">-</span>
                     );
                   })()}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="whitespace-nowrap">
+                  <span className={`status-pill ${item.status === 'COMPLETED'
+                        ? 'status-positive'
+                        : item.status === 'IN_PROGRESS'
+                          ? 'status-warn'
+                          : 'status-accent'
+                      }`}>
                   <select
-                
                     key={`${item._id}-${item.status}`}
                     value={item.status || 'ETS'}
                     onChange={(e) => {
@@ -243,25 +227,21 @@ export default function TodoDetail({ todo, onUpdateTodo }: TodoDetailProps) {
                       console.log('Dropdown onChange triggered for item:', item._id, 'new status:', newStatus, 'current status:', item.status);
                       handleStatusChange(item._id, newStatus);
                     }}
-                    className={`px-3 py-1 rounded-full text-xs font-medium border-0 focus:ring-2 focus:ring-yellow-400 transition-all duration-300 ${item.status === 'COMPLETED'
-                        ? 'bg-green-900/50 text-green-400 hover:bg-green-800'
-                        : item.status === 'IN_PROGRESS'
-                          ? 'bg-yellow-900/50 text-yellow-400 hover:bg-yellow-800'
-                          : 'bg-blue-900 text-blue-400 hover:bg-blue-800'
-                      }`}
+                    className="status-select"
                   >
                     <option value="ETS">ETS</option>
                     <option value="IN_PROGRESS">IN PROGRESS</option>
                     <option value="COMPLETED">COMPLETED</option>
                   </select>
+                  </span>
 
                 </td>
-                <td className="px-6 py-4">
+                <td>
                   {item.links?.map((link, i) => (
                     <a
                       key={i}
                       href={link}
-                      className="text-blue-400 hover:text-yellow-300 block transition-colors duration-300 hover:underline"
+                      className="link block break-all"
                       target="_blank"
                       rel="noopener noreferrer"
                     >
@@ -269,28 +249,30 @@ export default function TodoDetail({ todo, onUpdateTodo }: TodoDetailProps) {
                     </a>
                   )) || '-'}
                 </td>
-                <td className="px-6 py-4">
+                <td>
                   {item.images?.map((image, i) => (
                     <img
                       key={i}
                       src={image}
                       alt={`Item ${i + 1}`}
-                      className="h-10 w-10 object-cover rounded-md inline-block mr-2 hover:scale-150 transition-transform duration-300 cursor-pointer shadow-sm hover:shadow-md"
+                      className="mr-2 inline-block h-10 w-10 rounded-md object-cover"
                     />
                   )) || '-'}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                <td className="whitespace-nowrap text-right">
                   <button
                     onClick={() => handleEditItem(item)}
-                    className="text-white  mr-4 p-1.5 rounded-full hover:bg-slate-600 transition-all duration-300"
+                    className="icon-btn mr-2"
+                    aria-label="Edit item"
                   >
-                    <PencilIcon className="h-5 w-5" />
+                    <PencilIcon className="h-[17px] w-[17px]" />
                   </button>
                   <button
                     onClick={() => handleDeleteItem(item._id)}
-                    className="text-red-400 hover:text-red-300 p-1.5 rounded-full hover:bg-slate-900 transition-all duration-300"
+                    className="icon-btn icon-btn-danger"
+                    aria-label="Delete item"
                   >
-                    <TrashIcon className="h-5 w-5" />
+                    <TrashIcon className="h-[17px] w-[17px]" />
                   </button>
                 </td>
               </tr>
@@ -298,7 +280,7 @@ export default function TodoDetail({ todo, onUpdateTodo }: TodoDetailProps) {
             })}
             {filteredItems.length === 0 && (
               <tr>
-                <td colSpan={9} className="px-6 py-10 text-center text-slate-400">
+                <td colSpan={9} className="py-10 text-center">
                   <div
                     className="flex flex-col items-center justify-center"
                     data-aos="fade-up"
@@ -306,9 +288,9 @@ export default function TodoDetail({ todo, onUpdateTodo }: TodoDetailProps) {
                     <img
                       src="/file.svg"
                       alt="No items"
-                      className="h-16 w-16 mb-4 opacity-60 invert"
+                      className="mb-4 h-16 w-16 opacity-60"
                     />
-                    <p>{searchQuery ? 'No items found matching your search.' : 'No items in this todo yet. Add one to get started.'}</p>
+                    <p className="help">{searchQuery ? 'No items found matching your search.' : 'No items in this todo yet. Add one to get started.'}</p>
                   </div>
                 </td>
               </tr>
@@ -323,13 +305,13 @@ export default function TodoDetail({ todo, onUpdateTodo }: TodoDetailProps) {
         className="fixed z-10 inset-0 overflow-y-auto"
       >
         <div className="flex items-center justify-center min-h-screen p-4">
-          <div className="fixed inset-0 bg-black backdrop-blur-sm" aria-hidden="true" />
+          <div className="modal-overlay" aria-hidden="true" />
 
           <div
-            className="relative bg-black00 rounded-2xl w-full max-w-md mx-4 p-6 shadow-2xl border border-gray-300"
+            className="modal-panel relative w-full max-w-md mx-4 p-6"
             data-aos="zoom-in"
           >
-            <h3 className="text-lg font-medium mb-4 text-center bg-gradient-to-r from-yellow-400 to-yellow-300 bg-clip-text text-transparent">
+            <h3 className="panel-title mb-4 text-center">
               {isEditing ? 'Edit Item' : 'Add Item'}
             </h3>
             <form
@@ -371,66 +353,66 @@ export default function TodoDetail({ todo, onUpdateTodo }: TodoDetailProps) {
               className="space-y-4"
             >
               <div>
-                <label className="block text-sm font-medium text-yellow-400">
+                <label className="field-label">
                   Name
                 </label>
                 <input
                   type="text"
                   name="name"
                   defaultValue={currentItem?.name || ''}
-                  className="mt-1 p-2 block w-full rounded-md border-gray-300 bg-slate-700 shadow-sm focus:border-yellow-400 focus:ring-yellow-400 text-slate-200 transition-all duration-300"
+                  className="field mt-1"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-yellow-400">
+                <label className="field-label">
                   Notes
                 </label>
                 <textarea
                   name="notes"
                   defaultValue={currentItem?.notes || ''}
-                  className="mt-1 block w-full rounded-md border-gray-300 bg-slate-700 shadow-sm focus:border-yellow-400 focus:ring-yellow-400 text-slate-200 transition-all duration-300"
+                  className="field mt-1"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-yellow-400">
+                <label className="field-label">
                   Points
                 </label>
                 <input
                   type="number"
                   name="points"
                   defaultValue={currentItem?.points || ''}
-                  className="mt-1 block p-2 w-full rounded-md border-gray-300 bg-slate-700 shadow-sm focus:border-yellow-400 focus:ring-yellow-400 text-slate-200 transition-all duration-300"
+                  className="field mt-1"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-yellow-400">
+                <label className="field-label">
                   Links (one per line)
                 </label>
                 <textarea
                   name="links"
                   defaultValue={currentItem?.links?.join('\n') || ''}
-                  className="mt-1 block w-full rounded-md border-gray-300 bg-slate-700 shadow-sm focus:border-yellow-400 focus:ring-yellow-400 text-slate-200 transition-all duration-300"
+                  className="field mt-1"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-yellow-400">
+                <label className="field-label">
                   Target Date (Optional)
                 </label>
                 <input
                   type="date"
                   name="targetDate"
                   defaultValue={currentItem?.targetDate ? new Date(currentItem.targetDate).toISOString().split('T')[0] : ''}
-                  className="mt-1 p-2 block w-full rounded-md border-gray-300 bg-slate-700 shadow-sm focus:border-yellow-400 focus:ring-yellow-400 text-slate-200 transition-all duration-300"
+                  className="field mt-1"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-yellow-400">
+                <label className="field-label">
                   Status
                 </label>
                 <select
                   name="status"
                   defaultValue={currentItem?.status || 'ETS'}
-                  className="mt-1 p-2 block w-full rounded-md border-gray-300 bg-slate-700 shadow-sm focus:border-yellow-400 focus:ring-yellow-400 text-slate-200 transition-all duration-300"
+                  className="field mt-1"
                 >
                   <option value="ETS">ETS</option>
                   <option value="IN_PROGRESS">IN PROGRESS</option>
@@ -439,26 +421,26 @@ export default function TodoDetail({ todo, onUpdateTodo }: TodoDetailProps) {
 
               </div>
               <div>
-                <label className="block text-sm font-medium text-yellow-400">
+                <label className="field-label">
                   Image URLs (one per line)
                 </label>
                 <textarea
                   name="images"
                   defaultValue={currentItem?.images?.join('\n') || ''}
-                  className="mt-1 p-2 block w-full rounded-md border-gray-300 bg-slate-700 shadow-sm focus:border-yellow-400 focus:ring-yellow-400 text-slate-200 transition-all duration-300"
+                  className="field mt-1"
                 />
               </div>
               <div className="flex justify-end space-x-3 pt-4">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 text-sm font-medium text-slate-300 bg-slate-700 rounded-md hover:bg-slate-600 transition-colors duration-300 border border-gray-300"
+                  className="btn-secondary"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 text-sm font-medium text-yellow-400 bg-gradient-to-r from-blue-700 to-indigo-800 rounded-md hover:from-blue-800 hover:to-indigo-900 transition-all duration-300 shadow-md"
+                  className="btn-primary"
                 >
                   {isEditing ? 'Save Changes' : 'Add Item'}
                 </button>
