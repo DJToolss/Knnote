@@ -220,22 +220,25 @@ export default function Home() {
         position="bottom-right" 
         toastOptions={{
           style: {
-            background: 'var(--surface)',
-            color: 'var(--text)',
-            border: '1px solid var(--border)',
+            background: 'var(--paper)',
+            color: 'var(--ink)',
+            border: '1px solid var(--line)',
+            borderLeft: '3px solid var(--slate-light)',
             boxShadow: 'var(--shadow-card)',
             fontSize: '13px',
           },
           success: {
+            style: { borderLeft: '3px solid var(--good)' },
             iconTheme: {
-              primary: 'var(--positive)',
-              secondary: 'var(--positive-soft)',
+              primary: 'var(--good)',
+              secondary: 'var(--good-bg)',
             },
           },
           error: {
+            style: { borderLeft: '3px solid var(--bad)' },
             iconTheme: {
-              primary: 'var(--negative)',
-              secondary: 'var(--negative-soft)',
+              primary: 'var(--bad)',
+              secondary: 'var(--bad-bg)',
             },
           },
         }}

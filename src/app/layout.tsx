@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { IBM_Plex_Mono, Inter } from "next/font/google";
+import { Fraunces, IBM_Plex_Mono, Inter } from "next/font/google";
 import "aos/dist/aos.css"; // AOS styles
 import "./globals.css";
 import AOSInitializer from "@/components/AOSInitializer";
@@ -9,6 +9,13 @@ import Header from "@/components/Header";
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
+  weight: ["400", "500", "600"],
+});
+
+const fraunces = Fraunces({
+  variable: "--font-fraunces",
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
 });
 
 const plexMono = IBM_Plex_Mono({
@@ -22,18 +29,13 @@ export const metadata: Metadata = {
   description: "A quiet place for projects, notes, and status",
 };
 
-const themeInitScript = `(function(){try{var t=localStorage.getItem('knnote-theme');if(t!=='dark'&&t!=='light')t='light';document.documentElement.setAttribute('data-theme',t);document.documentElement.style.colorScheme=t;}catch(e){}})();`;
-
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} ${plexMono.variable}`} suppressHydrationWarning>
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
-      </head>
+    <html lang="en" className={`${inter.variable} ${fraunces.variable} ${plexMono.variable}`}>
       <body className="antialiased min-h-screen">
         <AuthProvider>
           <AOSInitializer>

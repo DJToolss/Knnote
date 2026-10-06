@@ -8,7 +8,6 @@ import { UserIcon, ArrowRightOnRectangleIcon, KeyIcon, Bars3Icon } from '@heroic
 import { Dialog } from '@headlessui/react';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
-import ThemeToggle from '@/components/ThemeToggle';
 
 export default function Header() {
   const { data: session, status } = useSession();
@@ -128,7 +127,6 @@ export default function Header() {
             </div>
             
             <div className="ml-4 flex items-center gap-3">
-              <ThemeToggle />
               {status === 'authenticated' && pathname !== '/workspace' && (
                 <Link href="/workspace" className="btn-primary">
                   Workspace
